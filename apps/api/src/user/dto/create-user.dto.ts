@@ -3,6 +3,7 @@ import {
   IsArray,
   IsEmail,
   IsMongoId,
+  IsOptional,
   IsPhoneNumber,
   MinLength,
 } from 'class-validator';
@@ -20,6 +21,7 @@ export class CreateUserDto {
   @IsPhoneNumber('UA')
   phone: string;
 
+  @IsOptional()
   @IsArray()
   @ArrayNotEmpty()
   @IsMongoId({ each: true })
