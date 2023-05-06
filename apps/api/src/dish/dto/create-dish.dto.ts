@@ -11,7 +11,7 @@ export class CreateDishDto {
 
   @IsNumber()
   @Min(MIN_PRICE)
-  price: string;
+  price: number;
 
   @IsString()
   weight: string;

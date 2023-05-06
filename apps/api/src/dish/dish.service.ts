@@ -1,26 +1,41 @@
 import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+
 import { CreateDishDto } from './dto/create-dish.dto';
+import { DishFilter } from './dto/dish-params.dto';
 import { UpdateDishDto } from './dto/update-dish.dto';
+import { Dish, DishDocument } from './schemas/dish.schema';
 
 @Injectable()
 export class DishService {
-  create(createDishDto: CreateDishDto) {
-    return 'This action adds a new dish';
+  constructor(@InjectModel(Dish.name) public dishModel: Model<DishDocument>) {}
+
+  async findAll(filter: DishFilter) {
+    const dishes = await this.dishModel.find().populate('category').exec();
+
+    if (filter?.category) {
+      return dishes.filter((dish) => dish.category.slug === filter.category);
+    }
+
+    return dishes;
   }
 
-  findAll() {
-    return `This action returns all dish`;
+  async findOne(id: string) {
+    return this.dishModel.findById(id).populate('category').exec();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} dish`;
+  async create(createDishDto: CreateDishDto) {
+    const dish = new this.dishModel(createDishDto);
+    return dish.save();
   }
 
-  update(id: number, updateDishDto: UpdateDishDto) {
-    return `This action updates a #${id} dish`;
+  async update(id: string, updateDishDto: UpdateDishDto) {
+    return this.dishModel.findByIdAndUpdate(id, updateDishDto, { new: true }).exec();
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} dish`;
+  async remove(id: string) {
+    await this.dishModel.findByIdAndDelete(id);
+    return true;
   }
 }
