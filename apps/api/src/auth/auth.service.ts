@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { compare } from 'bcrypt';
 import { CreateUserDto } from 'user/dto/create-user.dto';
@@ -13,6 +13,10 @@ export class AuthService {
 
   async validateUser(email: string, pass: string): Promise<SecureUser> {
     const user = await this.userService.findByEmail(email);
+
+    if (!user) {
+      throw new UnauthorizedException('Incorrect email or password');
+    }
 
     const match = await compare(pass, user.password);
 

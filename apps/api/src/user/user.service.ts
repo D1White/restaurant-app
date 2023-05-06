@@ -17,19 +17,29 @@ export class UserService {
     return createdUser.save();
   }
 
-  findById(id: string) {
+  async findById(id: string) {
     return this.userModel.findById(id).select('-password').exec();
   }
 
-  findByEmail(email: string) {
+  async findByEmail(email: string) {
     return this.userModel.findOne({ email }).exec();
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(id: string, updateUserDto: UpdateUserDto) {
+    const hashPassword = updateUserDto?.password ? await hash(updateUserDto.password, 7) : '';
+
+    return this.userModel
+      .findByIdAndUpdate(
+        id,
+        { ...updateUserDto, ...(hashPassword && { password: hashPassword }) },
+        { new: true },
+      )
+      .select('-password')
+      .exec();
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async remove(id: string) {
+    await this.userModel.findByIdAndDelete(id);
+    return true;
   }
 }

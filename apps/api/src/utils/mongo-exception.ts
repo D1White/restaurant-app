@@ -1,57 +1,23 @@
-import { ArgumentsHost, Catch, ExceptionFilter, HttpStatus } from '@nestjs/common';
-import { Error } from 'mongoose';
+import { ArgumentsHost, Catch, ExceptionFilter } from '@nestjs/common';
+import { Response } from 'express';
+import { MongoError } from 'mongodb';
 
-enum MongoErrors {
-  MongooseError = 'MongooseError',
-  DocumentNotFoundError = 'DocumentNotFoundError',
-  CastError = 'CastError',
-  DisconnectedError = 'DisconnectedError',
-  DivergentArrayError = 'DivergentArrayError',
-  MissingSchemaError = 'MissingSchemaError',
-  ValidatorError = 'ValidatorError',
-  ValidationError = 'ValidationError',
-  ObjectExpectedError = 'ObjectExpectedError',
-  ObjectParameterError = 'ObjectParameterError',
-  OverwriteModelError = 'OverwriteModelError',
-  ParallelSaveError = 'ParallelSaveError',
-  StrictModeError = 'StrictModeError',
-  VersionError = 'VersionError',
-}
-
-@Catch(Error)
+@Catch(MongoError)
 export class MongoExceptionFilter implements ExceptionFilter {
-  catch(exception: Error, host: ArgumentsHost) {
+  catch(exception: MongoError, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
-    const response = ctx.getResponse();
+    const response = ctx.getResponse<Response>();
 
-    let error;
-
-    switch (exception.name) {
-      case MongoErrors.DocumentNotFoundError: {
-        error = {
-          statusCode: HttpStatus.NOT_FOUND,
-          message: 'NOT_FOUND',
-        };
-        break;
-      }
-
-      case MongoErrors.ValidationError: {
-        error = {
-          statusCode: HttpStatus.BAD_REQUEST,
-          message: 'BAD_REQUEST',
-        };
-        break;
-      }
-
-      default: {
-        error = {
-          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-          message: 'INTERNAL_SERVER_ERROR',
-        };
-        break;
-      }
+    if (exception.code === 11000) {
+      response.status(400).json({
+        statusCode: 400,
+        message: 'Duplicate key error',
+      });
+    } else {
+      response.status(500).json({
+        statusCode: 500,
+        message: exception.message,
+      });
     }
-
-    response.status(error.statusCode).json(error);
   }
 }
