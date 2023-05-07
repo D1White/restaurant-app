@@ -38,4 +38,15 @@ export class DishService {
     await this.dishModel.findByIdAndDelete(id);
     return true;
   }
+
+  async getPriceByIds(ids: string[]) {
+    const dishes = await this.dishModel
+      .find({ _id: { $in: ids } })
+      .select('price')
+      .exec();
+
+    const price = dishes.reduce((curr, acc) => curr + acc.price, 0);
+
+    return price;
+  }
 }

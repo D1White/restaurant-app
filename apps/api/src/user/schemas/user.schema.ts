@@ -21,13 +21,6 @@ export class User {
 
   @Prop({ required: true, type: SchemaTypes.String, unique: true })
   phone: string;
-
-  @Prop({
-    required: true,
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Order' }],
-    default: [],
-  })
-  orders: Order;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

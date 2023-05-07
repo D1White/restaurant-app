@@ -1,26 +1,45 @@
 import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { DishService } from 'dish/dish.service';
+import { Model } from 'mongoose';
+
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
+import { Order, OrderDocument } from './schemas/order.schema';
 
 @Injectable()
 export class OrderService {
-  create(createOrderDto: CreateOrderDto) {
-    return 'This action adds a new order';
+  constructor(
+    @InjectModel(Order.name) public orderModel: Model<OrderDocument>,
+    private readonly dishService: DishService,
+  ) {}
+
+  async findAll(userId: string) {
+    return this.orderModel.find({ user: userId }).exec();
   }
 
-  findAll() {
-    return `This action returns all order`;
+  async findOne(id: string) {
+    return this.orderModel.findById(id).populate('order_list').exec();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} order`;
+  async create(createOrderDto: CreateOrderDto, userId: string) {
+    const dishesPrice = await this.dishService.getPriceByIds(createOrderDto.order_list);
+
+    const order = new this.orderModel({ ...createOrderDto, price: dishesPrice || 0, user: userId });
+    return order.save();
   }
 
-  update(id: number, updateOrderDto: UpdateOrderDto) {
-    return `This action updates a #${id} order`;
-  }
+  async update(id: string, updateOrderDto: UpdateOrderDto) {
+    const dishesPrice = updateOrderDto?.order_list
+      ? await this.dishService.getPriceByIds(updateOrderDto.order_list)
+      : null;
 
-  remove(id: number) {
-    return `This action removes a #${id} order`;
+    return this.orderModel
+      .findByIdAndUpdate(
+        id,
+        { ...updateOrderDto, ...(dishesPrice && { price: dishesPrice }) },
+        { new: true },
+      )
+      .exec();
   }
 }
