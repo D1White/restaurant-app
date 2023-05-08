@@ -12,7 +12,7 @@ import { UserModule } from './user/user.module';
 @Module({
   imports: [
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '../..', 'web', 'dist'),
+      rootPath: join(__dirname, '../..', 'web', 'build'),
     }),
     MongooseModule.forRoot(process.env.MONGO_URI),
     UserModule,
