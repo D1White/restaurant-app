@@ -30,7 +30,11 @@ export class OrderController {
 
   @Patch(':id')
   @UseGuards(AdminGuard)
-  update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
-    return this.orderService.update(id, updateOrderDto);
+  update(
+    @Param('id') id: string,
+    @Body() updateOrderDto: UpdateOrderDto,
+    @UserId() userId: string,
+  ) {
+    return this.orderService.update(id, updateOrderDto, userId);
   }
 }
