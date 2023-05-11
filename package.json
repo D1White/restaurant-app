@@ -4,7 +4,7 @@
   "scripts": {
     "dev": "dotenv -- turbo run dev",
     "build": "turbo run build",
-    "start:build": "dotenv node ./apps/api/dist/main.js"
+    "start": "dotenv node ./apps/api/dist/main.js"
   },
   "workspaces": [
     "apps/*"
