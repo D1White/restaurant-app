@@ -1,8 +1,0 @@
-{
-  "buildCommand": "turbo run build",
-  "installCommand": "yarn install",
-  "outputDirectory": ".",
-  "build": {
-    "command": "npm run start"
-  }
-}
